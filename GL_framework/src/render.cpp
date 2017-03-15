@@ -760,7 +760,7 @@ void setupClothMesh() {
 	GLubyte facesIdx[facesVertsIdx] = { 0 };
 	for (int i = 0; i < (numRows - 1); ++i) {
 		for (int j = 0; j < (numCols - 1); ++j) {
-			facesIdx[5 * (i*(numCols-1) + j) + 0] = i*numCols + j;
+			facesIdx[5 * (i*(numCols-1) + j) + 0] = i*numCols + j; 
 			facesIdx[5 * (i*(numCols-1) + j) + 1] = (i + 1)*numCols + j;
 			facesIdx[5 * (i*(numCols-1) + j) + 2] = (i + 1)*numCols + (j + 1);
 			facesIdx[5 * (i*(numCols-1) + j) + 3] = i*numCols + (j + 1);
