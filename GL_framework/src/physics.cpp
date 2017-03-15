@@ -36,9 +36,7 @@ void PhysicsInit() {
 	//Se instancian las particulas en su posicion inicial
 	for (int i = 0; i < ClothMesh::numCols; i++) {
 		for (int j = 0; j < ClothMesh::numRows; j++) {
-			arrayParts[j * 14 + i].pos.x = j*0.6f-5.f;
-			arrayParts[j * 14 + i].pos.y = 5;
-			arrayParts[j * 14 + i].pos.z = i*0.4f-2.5f;
+			arrayParts[j * 14 + i].pos = glm::vec3(j*0.6f-5.f, 5, i*0.4f-2.5f);
 		}
 	}
 
@@ -46,7 +44,7 @@ void PhysicsInit() {
 void PhysicsUpdate(float dt) {
 	//TODO
 	for (int i = 0; i < ClothMesh::numVerts; i++) {
-		arrayParts[i].Particle::UpdateParticle(dt);
+		arrayParts[i].Particle::UpdateParticle(dt, gravity);
 	}
 	
 	//Se guardan en el array de posiciones las posiciones nuevas de cada particula
