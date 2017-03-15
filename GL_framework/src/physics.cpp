@@ -3,7 +3,7 @@
 #include "..\include\Particle.h"
 
 bool show_test_window = false;
-float gravity;
+glm::vec3 gravity;
 Particle* arrayParts;
 float* arrayPos;
 namespace ClothMesh {
@@ -31,6 +31,7 @@ void PhysicsInit() {
 	//TODO
 	arrayParts = new Particle[ClothMesh::numVerts]; //array de todas las particulas
 	arrayPos = new float[ClothMesh::numVerts*3]; //array de las posiciones de las particulas
+	gravity = glm::vec3(0, -9.81, 0);
 
 	//Se instancian las particulas en su posicion inicial
 	for (int i = 0; i < ClothMesh::numCols; i++) {
@@ -44,7 +45,10 @@ void PhysicsInit() {
 }
 void PhysicsUpdate(float dt) {
 	//TODO
-
+	for (int i = 0; i < ClothMesh::numVerts; i++) {
+		arrayParts[i].Particle::UpdateParticle(dt);
+	}
+	
 	//Se guardan en el array de posiciones las posiciones nuevas de cada particula
 	for (int i = 0; i < ClothMesh::numVerts; i ++) {
 		arrayPos[i*3] = arrayParts[i].pos.x;

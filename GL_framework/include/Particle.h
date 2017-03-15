@@ -14,11 +14,12 @@ public:
 	glm::vec3 pos;
 	glm::vec3 velocity;
 	glm::vec3 accel;
-	glm::vec3 force;
+	glm::vec3 gravityForce;
 	float mass;
 	Particle(glm::vec3 = glm::vec3(0,0,0));
 	~Particle();
 	void StartParticle(glm::vec3);
 	void UpdateParticle(float);
+	glm::vec3 CalculateForce(glm::vec3);
 };	
 
