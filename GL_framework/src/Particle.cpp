@@ -8,6 +8,13 @@ Particle::Particle(glm::vec3 posicionOriginal)
 	mass = 1;
 }
 
+namespace ClothMesh {
+	extern void updateClothMesh(float* array_data);
+	extern const int numCols;
+	extern const int numRows;
+	extern const int numVerts;
+}
+
 void Particle::StartParticle(glm::vec3 posicionOriginal) {
 	planos[0].SetPlaneStats(0.0f, 1.0f, 0.0f, 0.0f); // Parte abajo del cubo
 	planos[1].SetPlaneStats(0.0f, 0.0f, -1.0f, -5.0f);
@@ -40,11 +47,49 @@ void Particle::UpdateParticle(float dt, glm::vec3 gravity) {
 	CheckCol();
 }
 
+glm::vec3 Particle::ApplySpring(glm::vec2 k, glm::vec3 p1, glm::vec3 p2, glm::vec3 v1, glm::vec3 v2, float distOrg) {
+	return (-(k.x*(glm::length(p1-p2)-distOrg)+k.y*(v1-v2)*((p1-p2)/glm::length(p1-p2)))*(p1-p2/(glm::length(p1 - p2))));
+}
+
 glm::vec3 Particle::CalculateForce() {
+	glm::vec3 strechForce = glm::vec3(0, 0, 0);
+	glm::vec3 shearForce = glm::vec3(0, 0, 0);
+	glm::vec3 bendForce = glm::vec3(0, 0, 0);
+
+	extern glm::vec2 k_Strech;
+	extern glm::vec2 k_Shear;
+	extern glm::vec2 k_bend;
+
 	//Valorar las formulas de los muelles
+
 	glm::vec3 resultantForce;
+	extern glm::vec3 dist;
+
+	//PARA SABER LA I (int)index / 14
+	//PARA SABER LA J index%14
+	int i = (int)index/14;
+	int j = index%14; 
+	extern Particle* arrayParts;
+	if ((i > 2 && i < ClothMesh::numRows - 2) && (j > 2&&j<ClothMesh::numCols-2)) {
+		//CASO EN EL QUE SE APLICAN TODAS LAS FUERZAS
+		strechForce += ApplySpring(k_Strech,pos,arrayParts[index+1].pos,velocity,arrayParts[index+1].velocity,dist.x);
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 1].pos, velocity, arrayParts[index - 1].velocity, dist.x);
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 14].pos, velocity, arrayParts[index + 14].velocity, dist.z);
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index -14].pos, velocity, arrayParts[index -14].velocity, dist.z);
+		
+		shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 + 1].pos, velocity, arrayParts[index + 14 + 1].velocity, glm::length(dist));
+		shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 + 1].pos, velocity, arrayParts[index - 14 + 1].velocity, glm::length(dist));
+		shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 - 1].pos, velocity, arrayParts[index + 14 - 1].velocity, glm::length(dist));
+		shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 - 1].pos, velocity, arrayParts[index - 14 - 1].velocity, glm::length(dist));
+
+		bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2].pos, velocity, arrayParts[index + 2].velocity, dist.x * 2);
+		bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2].pos, velocity, arrayParts[index - 2].velocity, dist.x * 2);
+		bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2*14].pos, velocity, arrayParts[index + 2*14].velocity, dist.z * 2);
+		bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2-14].pos, velocity, arrayParts[index - 2*14].velocity, dist.z * 2);
+
+	}
 	
-	resultantForce = gravityForce * mass;
+	resultantForce = gravityForce * mass+bendForce+strechForce+shearForce;
 
 	glm::vec3 acceleration = resultantForce / mass;
 	return acceleration;
@@ -71,8 +116,9 @@ void Particle::CheckCol(){
 }
 
 void Particle::Bounce(Plane plano) {
-	pos = pos - 2 * (glm::dot(plano.n, pos) + plano.d)*plano.n;
-	velocity = velocity - 2 * (glm::dot(plano.n, velocity))*plano.n;
+	extern float elasticCoeficientBounce;
+	pos = pos - (1+ elasticCoeficientBounce) * (glm::dot(plano.n, pos) + plano.d)*plano.n;
+	velocity = velocity - (1 + elasticCoeficientBounce) * (glm::dot(plano.n, velocity))*plano.n;
 }
 
 Particle::~Particle()
