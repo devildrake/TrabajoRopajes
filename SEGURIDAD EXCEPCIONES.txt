@@ -1,0 +1,46 @@
+else {
+		if (((int)index / 14) < 18) {
+			strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 1].pos, velocity, arrayParts[index + 1].velocity, dist.x);
+			if (((int)index / 14) < 17) {
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2].pos, velocity, arrayParts[index + 2].velocity, dist.x * 2);
+			}
+		}
+		if (((int)index / 14) > 0) {
+			strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 1].pos, velocity, arrayParts[index - 1].velocity, dist.x);
+			if (((int)index / 14) >1) {
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2].pos, velocity, arrayParts[index - 2].velocity, dist.x * 2);
+			}
+		}
+
+		if (index % 14 < 14) {
+			strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 14].pos, velocity, arrayParts[index + 14].velocity, dist.z);
+			if (index % 14 < 13) {
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2 * 14].pos, velocity, arrayParts[index + 2 * 14].velocity, dist.z * 2);
+			}
+		}
+		if (index % 14 > 0) {
+			strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 14].pos, velocity, arrayParts[index - 14].velocity, dist.z);
+			if (index % 14 > 1) {
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2 - 14].pos, velocity, arrayParts[index - 2 * 14].velocity, dist.z * 2);
+			}
+		}
+		//Comprueba si esta en la esquina inferior derecha
+		if (((int)index / 14) < 17 && (index % 14 < 14)) {
+			shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 + 1].pos, velocity, arrayParts[index + 14 + 1].velocity, glm::length(dist));
+
+		}
+		//Comprueba si esta en la esquina inferior izquierda
+		if (((int)index / 14) < 17 && (index % 14 > 0)) {
+			shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 + 1].pos, velocity, arrayParts[index - 14 + 1].velocity, glm::length(dist));
+		}
+		//Comprueba si esta en la esquina Superior derecha
+		if (((int)index / 14) > 0 && (index % 14 < 14)) {
+			shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 - 1].pos, velocity, arrayParts[index + 14 - 1].velocity, glm::length(dist));
+		}
+		//Comprueba si esta en la esquina Superior izquierda
+
+		if (((int)index / 14) > 0 && (index % 14 > 0)) {
+			shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 - 1].pos, velocity, arrayParts[index - 14 - 1].velocity, glm::length(dist));
+		}
+
+	}
