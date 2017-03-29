@@ -46,7 +46,7 @@ public:
 	void StartParticle(glm::vec3);
 	void UpdateParticle(float,glm::vec3);
 	void Bounce(Plane);
-	void CheckCol();
+	void CheckCol(float);
 	glm::vec3 Particle::ApplySpring(glm::vec2,glm::vec3,glm::vec3,glm::vec3,glm::vec3,float);
 	glm::vec3 CalculateForce();
 };	

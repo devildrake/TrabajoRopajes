@@ -75,7 +75,7 @@ void PhysicsInit() {
 	dist.x = dist.z = 0.5f;
 	dist.y = 0;
 	elasticCoeficientBounce = 0.5f;
-	sphereC = glm::vec3(0.f,5.f,0.f);
+	sphereC = glm::vec3(0.f,1.f,0.f);
 	sphereR = 1;
 	Sphere::updateSphere(sphereC, sphereR);
 

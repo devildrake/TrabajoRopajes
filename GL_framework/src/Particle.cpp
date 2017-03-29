@@ -95,16 +95,27 @@ glm::vec3 Particle::CalculateForce() {
 	return acceleration;
 }
 
-void Particle::CheckCol(){
+void Particle::CheckCol(float dt){
 	extern glm::vec3 sphereC;
 	extern float sphereR;
 
-	if (index != 0 && index != 13) {
+	if (index != 0 && index != 13) { //La primera y la ultima de la primera fila estan fijas.
 		for (int i = 0; i < 6; i++) {
 			if (((glm::dot(planos[i].n, prevPos)) + planos[i].d) * ((glm::dot(planos[i].n, pos)) + planos[i].d) <= 0) {
 				//	std::cout << "Collided" << std::endl;
 					Bounce(planos[i]);
 			}
+			if (glm::abs(glm::length(pos-sphereC)) < sphereR) {
+				//HAY QUE CALCULAR EL PUNTO DE INTERSECCION ENTRE LA ESFERA Y LA EQ DE LA RECTA DE LA 
+				//TRAYECTORIA DE LA PARTICULA
+				glm::vec3 antPos = pos - velocity*dt;
+				glm::vec3 vRecta = pos - antPos;
+
+				glm::vec3 n = (pos - sphereC) / (glm::length(pos - sphereC));
+				int D = -(glm::dot(n, pos));
+				Bounce(Plane(n.x, n.y, n.z, D));
+			}
+
 		}
 	
 	//if ((abs(sphereC.x - pos.x) < sphereR) && (abs(sphereC.y - pos.y) < sphereR) && (abs(sphereC.z - pos.z) < sphereR)) {
