@@ -44,7 +44,7 @@ void Particle::UpdateParticle(float dt, glm::vec3 gravity) {
 		velocity += accel*dt;
 
 	}
-	CheckCol();
+	CheckCol(dt);
 }
 
 glm::vec3 Particle::ApplySpring(glm::vec2 k, glm::vec3 p1, glm::vec3 p2, glm::vec3 v1, glm::vec3 v2, float distOrg) {
@@ -147,11 +147,28 @@ void Particle::CheckCol(float dt){
 				//HAY QUE CALCULAR EL PUNTO DE INTERSECCION ENTRE LA ESFERA Y LA EQ DE LA RECTA DE LA 
 				//TRAYECTORIA DE LA PARTICULA
 				glm::vec3 antPos = pos - velocity*dt;
-				glm::vec3 vRecta = pos - antPos;
+				glm::vec3 recta = pos - antPos;
+				glm::vec3 vDir = glm::normalize(recta);
+				
+				/*float a = glm::pow(recta.x, 2) + glm::pow(recta.y, 2) + glm::pow(recta.z, 2);
+				float b = 2 * (recta.x * (antPos.x - sphereC.x) + recta.y + (antPos.y - sphereC.y) + recta.z * (antPos.z - sphereC.z));
+				float c = glm::pow(sphereC.x, 2) + glm::pow(sphereC.y, 2) + glm::pow(sphereC.z, 2) + glm::pow(antPos.x, 2) + glm::pow(antPos.y, 2) + glm::pow(antPos.z, 2) - 2 * (sphereC.x * antPos.x + sphereC.y * antPos.y + sphereC.z * antPos.z) - (sphereR * sphereR);*/
 
-				glm::vec3 n = (pos - sphereC) / (glm::length(pos - sphereC));
-				int D = -(glm::dot(n, pos));
-				Bounce(Plane(n.x, n.y, n.z, D));
+				//(b*b - 4 * a*c == 0) --> trayectoria tangente a la esfera
+				/*float alpha1, alpha2;
+				if (b*b - 4 * a*c > 0) {
+					alpha1 = (-b + glm::sqrt(b*b - 4 * a*c)) / 2 * a;
+					alpha2 = (-b - glm::sqrt(b*b - 4 * a*c)) / 2 * a;
+					
+					glm::vec3 pColision;
+					if (alpha1<alpha2) pColision = antPos + recta*alpha1;
+					else pColision = antPos + recta*alpha2;
+
+					glm::vec3 n = pColision - sphereC;
+					int D = -(glm::dot(n, pColision));
+					Bounce(Plane(n.x, n.y, n.z, D));
+				}*/
+
 			}
 
 		}
