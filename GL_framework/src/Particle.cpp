@@ -149,6 +149,27 @@ void Particle::CheckCol(float dt){
 				glm::vec3 antPos = pos - velocity*dt;
 				glm::vec3 recta = pos - antPos;
 				glm::vec3 vDir = glm::normalize(recta);
+
+				float a = (recta.x*recta.x) + (recta.y*recta.y) + (recta.z*recta.z);
+
+				float b = ((2 * antPos.x*recta.x) - (2 * recta.x*(sphereC.x*sphereC.x)))
+					+ ((2 * antPos.y*recta.y) - (2 * recta.y*(sphereC.y*sphereC.y)))
+					+ ((2 * antPos.z*recta.z) - (2 * recta.z*(sphereC.z*sphereC.z)));
+
+				float c = ((antPos.x*antPos.x) + (sphereC.x*sphereC.x) - (2 * antPos.x*(sphereC.x*sphereC.x)))
+					+ (antPos.y*antPos.y) + (sphereC.y*sphereC.y) - (2 * antPos.y*(sphereC.y*sphereC.y))
+					+ (antPos.z*antPos.z) + (sphereC.z*sphereC.z) - (2 * antPos.z*(sphereC.z*sphereC.z));
+
+				float alpha = (-b + glm::sqrt(b*b - 4*a*c)) / 2 * a;
+				std::cout << alpha << std::endl;
+				if (alpha>0) {
+					glm::vec3 colPoint = antPos + alpha*recta;
+
+					glm::vec3 n = colPoint - sphereC;
+					n = glm::normalize(n);
+					int D = -(glm::dot(n, colPoint));
+					Bounce(Plane(n.x, n.y, n.z, D));
+				}
 				
 				/*float a = glm::pow(recta.x, 2) + glm::pow(recta.y, 2) + glm::pow(recta.z, 2);
 				float b = 2 * (recta.x * (antPos.x - sphereC.x) + recta.y + (antPos.y - sphereC.y) + recta.z * (antPos.z - sphereC.z));
