@@ -23,22 +23,22 @@ void Particle::StartParticle(glm::vec3 posicionOriginal) {
 	planos[4].SetPlaneStats(1.0f, 0.0f, 0.0f, 5.0f);
 	planos[5].SetPlaneStats(0.0f, -1.0f, 0.0f, 10.0f);
 	pos = orgPos = posicionOriginal;
-	//glm::vec3 accel = CalculateForce();
 	velocity.x = velocity.y = velocity.z = 0;
 }
 
+void Particle::Reset() {
+	pos = orgPos;
+	velocity = glm::vec3(0, 0, 0);
+}
+
 void Particle::UpdateParticle(float dt, glm::vec3 gravity) {
-	//glm::vec3 force = CalculateForce(accel
-
-
-
-
 	if (index != 0 && index != 13) {
 
 		gravityForce = gravity;
 
 		glm::vec3 accel = CalculateForce();
 		prevPos = pos;
+
 		pos = pos + velocity*dt;
 
 		velocity += accel*dt;
@@ -64,32 +64,70 @@ glm::vec3 Particle::CalculateForce() {
 
 	glm::vec3 resultantForce;
 	extern glm::vec3 dist;
-
 	//PARA SABER LA I (int)index / 14
 	//PARA SABER LA J index%14
-	int i = (int)index/14;
-	int j = index%14; 
+	int i = (int)index/ClothMesh::numCols;
+	int j = index%ClothMesh::numCols; 
 	extern Particle* arrayParts;
-	if ((i > 2 && i < ClothMesh::numRows - 2) && (j > 2&&j<ClothMesh::numCols-2)) {
-		//CASO EN EL QUE SE APLICAN TODAS LAS FUERZAS
-		strechForce += ApplySpring(k_Strech,pos,arrayParts[index+1].pos,velocity,arrayParts[index+1].velocity,dist.x);
-		strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 1].pos, velocity, arrayParts[index - 1].velocity, dist.x);
-		strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 14].pos, velocity, arrayParts[index + 14].velocity, dist.z);
-		strechForce += ApplySpring(k_Strech, pos, arrayParts[index -14].pos, velocity, arrayParts[index -14].velocity, dist.z);
-		
-		shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 + 1].pos, velocity, arrayParts[index + 14 + 1].velocity, glm::length(dist));
-		shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 + 1].pos, velocity, arrayParts[index - 14 + 1].velocity, glm::length(dist));
-		shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 - 1].pos, velocity, arrayParts[index + 14 - 1].velocity, glm::length(dist));
-		shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 - 1].pos, velocity, arrayParts[index - 14 - 1].velocity, glm::length(dist));
+	//if ((i > 2 && i < ClothMesh::numRows - 2) && (j > 2 && j < ClothMesh::numCols - 2)) {
+	//	//CASO EN EL QUE SE APLICAN TODAS LAS FUERZAS
+	//	strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 1].pos, velocity, arrayParts[index - 1].velocity, dist.x); //IZQUIERDA
+	//	strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 14].pos, velocity, arrayParts[index + 14].velocity, dist.z); //ABAJO
+	//	strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 1].pos, velocity, arrayParts[index + 1].velocity, dist.x);	//DERECHA
+	//	strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 14].pos, velocity, arrayParts[index - 14].velocity, dist.z); //ARRIBA
 
-		bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2].pos, velocity, arrayParts[index + 2].velocity, dist.x * 2);
-		bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2].pos, velocity, arrayParts[index - 2].velocity, dist.x * 2);
-		bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2*14].pos, velocity, arrayParts[index + 2*14].velocity, dist.z * 2);
-		bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2-14].pos, velocity, arrayParts[index - 2*14].velocity, dist.z * 2);
+	//	shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 - 1].pos, velocity, arrayParts[index + 14 - 1].velocity, glm::length(dist)); //ABAJO IZQUIERDA
+	//	shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 + 1].pos, velocity, arrayParts[index + 14 + 1].velocity, glm::length(dist)); //ABAJO DERECHA
+	//	shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 + 1].pos, velocity, arrayParts[index - 14 + 1].velocity, glm::length(dist)); //ARRIBA DERECHA
+	//	shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 - 1].pos, velocity, arrayParts[index - 14 - 1].velocity, glm::length(dist)); //ARRIBA IZQUIERDA
 
+	//	bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2].pos, velocity, arrayParts[index - 2].velocity, dist.x * 2); //IZQUIERDAIZQUIERDA
+	//	bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2 * 14].pos, velocity, arrayParts[index + 2 * 14].velocity, dist.z * 2); //ABAJOABAJO
+	//	bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2].pos, velocity, arrayParts[index + 2].velocity, dist.x * 2); //DERECHADERECHA
+	//	bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2 - 14].pos, velocity, arrayParts[index - 2 * 14].velocity, dist.z * 2); //ARRIBAARRIBA
+	//}
+				
+	if (index > ClothMesh::numCols) {
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 14].pos, velocity, arrayParts[index - 14].velocity, dist.z); //ARRIBA
+		if (index > ClothMesh::numCols * 2) {
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2 - 14].pos, velocity, arrayParts[index - 2 * 14].velocity, dist.z * 2); //ARRIBAARRIBA
+		}
 	}
-	
-	resultantForce = gravityForce * mass+bendForce+strechForce+shearForce;
+
+	if (index < (ClothMesh::numVerts - ClothMesh::numCols)) {
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 14].pos, velocity, arrayParts[index + 14].velocity, dist.z); //ABAJO
+		if (index < (ClothMesh::numVerts - 2 * ClothMesh::numCols)) {
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2 * 14].pos, velocity, arrayParts[index + 2 * 14].velocity, dist.z * 2); //ABAJOABAJO
+		}
+	}
+
+	if (index % 14 > 0) {
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 1].pos, velocity, arrayParts[index - 1].velocity, dist.x); //IZQUIERDA
+
+		if (index % 14 > 1) {
+			bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2].pos, velocity, arrayParts[index - 2].velocity, dist.x * 2); //IZQUIERDAIZQUIERDA
+		}
+		if (index > ClothMesh::numCols) {
+				shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 - 1].pos, velocity, arrayParts[index - 14 - 1].velocity, glm::length(dist)); //ARRIBA IZQUIERDA
+		}
+		if (index < (ClothMesh::numVerts - ClothMesh::numCols)) {
+				shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 - 1].pos, velocity, arrayParts[index + 14 - 1].velocity, glm::length(dist)); //ABAJO IZQUIERDA
+		}
+	}
+
+	if (index % 14 < 13) {
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 1].pos, velocity, arrayParts[index + 1].velocity, dist.x);	//DERECHA
+		if (index % 14 < 12) {
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2].pos, velocity, arrayParts[index + 2].velocity, dist.x * 2); //DERECHADERECHA
+		}
+		if (index > ClothMesh::numCols) {
+				shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 + 1].pos, velocity, arrayParts[index - 14 + 1].velocity, glm::length(dist)); //ARRIBA DERECHA
+		}
+		if (index < (ClothMesh::numVerts - ClothMesh::numCols)) {
+				shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 + 1].pos, velocity, arrayParts[index + 14 + 1].velocity, glm::length(dist)); //ABAJO DERECHA
+		}
+	}
+	resultantForce = (gravityForce * mass)+bendForce+strechForce+shearForce;
 
 	glm::vec3 acceleration = resultantForce / mass;
 	return acceleration;

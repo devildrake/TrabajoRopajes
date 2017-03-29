@@ -1,12 +1,15 @@
 #include <imgui\imgui.h>
 #include <imgui\imgui_impl_glfw_gl3.h>
 #include "..\include\Particle.h"
+#include <math.h>
 
 bool show_test_window = false;
 glm::vec3 gravity;
 Particle* arrayParts;
 
 float* arrayPos;
+float m_elongation;
+float contador;
 
 float resetTime;
 
@@ -19,8 +22,6 @@ glm::vec3 sphereC;
 float sphereR;
 
 float elasticCoeficientBounce;
-
-
 
 glm::vec3 dist;
 
@@ -46,11 +47,13 @@ void GUI() {
 
 		ImGui::SliderFloat3("gravity", &gravity.x, -10, 10);
 
-		ImGui::DragFloat2("k_strech", &k_Strech.x, 0.2f, 0, 10);
-		ImGui::DragFloat2("k_shear", &k_Strech.x, 0.2f, 0, 10);
-		ImGui::DragFloat2("k_bend", &k_Strech.x, 0.2f, 0, 10);
+		ImGui::DragFloat2("k_strech", &k_Strech.x, 0.002f, 0, 10);
+		ImGui::DragFloat2("k_shear", &k_Shear.x, 0.002f, 0, 10);
+		ImGui::DragFloat2("k_bend", &k_bend.x, 0.002f, 0, 10);
+
+
 		//ImGui::DragFloat("Particle Link Di");
-		//ImGui::DragFloat("Max Elongation");
+		ImGui::DragFloat("Max Elongation",&m_elongation,0.05f,0.05f,0.2f);
 
 		//ImGui::Checkbox("Use elongation Correction");
 		//ImGui::Checkbox("Use Collisions");
@@ -72,6 +75,14 @@ void GUI() {
 }
 
 void PhysicsInit() {
+	contador = 0;
+	//k_Strech = k_bend = k_Shear = glm::vec2(0.5f, 0.5f);
+	//k_Strech = glm::vec2(1, 1);
+	k_Shear = glm::vec2(0.2f, 0.2f);
+	//k_bend = glm::vec2(0.2f, 0.2f);
+
+
+	m_elongation = 0.05f;
 	dist.x = dist.z = 0.5f;
 	dist.y = 0;
 	elasticCoeficientBounce = 0.5f;
@@ -82,38 +93,119 @@ void PhysicsInit() {
 	//TODO
 	arrayParts = new Particle[ClothMesh::numVerts]; //array de todas las particulas
 	arrayPos = new float[ClothMesh::numVerts*3]; //array de las posiciones de las particulas
-	gravity = glm::vec3(0, -0, 0);
-	resetTime = 20.0f;
+	gravity = glm::vec3(0, -9.8f, 0);
+	resetTime = 4.0f;
 	//Se instancian las particulas en su posicion inicial
 	for (int i = 0; i < ClothMesh::numCols; i++) {
 		for (int j = 0; j < ClothMesh::numRows; j++) {
 			arrayParts[j * 14 + i].index = j * 14 + i;
-			arrayParts[j * 14 + i].StartParticle(glm::vec3(j*dist.x - 4.f, 5, i*dist.z - 2.5f));
+			arrayParts[j * 14 + i].StartParticle(glm::vec3(j*dist.x - 4.f, 8, i*dist.z - 2.5f));
 		}
 	}
 
 }
+
+void CorrectPosLeft(int i,float l) {
+	float distanciaACorregir = l - dist.x;
+	glm::vec3 vectorA = arrayParts[i].pos-arrayParts[i-1].pos;
+	vectorA = vectorA / (glm::length(vectorA));
+
+	if (i != 0 && i != 13) {
+		if (i - 1 != 0 && i - 1 != 13) {
+			distanciaACorregir = distanciaACorregir / 2;
+			arrayParts[i].pos -= vectorA*distanciaACorregir;
+			arrayParts[i - 1].pos += vectorA*distanciaACorregir;
+		}
+		else {
+			arrayParts[i].pos -= vectorA*distanciaACorregir;
+		}
+
+
+	}
+	else {
+		arrayParts[i-1].pos += vectorA*distanciaACorregir;
+	}
+
+
+}
+
+void CorrectPosUp(int i,float l) {
+	float distanciaACorregir = l - dist.x;
+	glm::vec3 vectorA = arrayParts[i].pos - arrayParts[i - ClothMesh::numCols].pos;
+	vectorA = vectorA / (glm::length(vectorA));
+
+	if (i != 0 && i != 13) {
+		if ((i - ClothMesh::numCols) != 0 && (i - ClothMesh::numCols) != 13) {
+			distanciaACorregir = distanciaACorregir / 2;
+			arrayParts[i].pos -= vectorA*distanciaACorregir;
+			arrayParts[i - ClothMesh::numCols].pos += vectorA*distanciaACorregir;
+		}
+		else {
+			arrayParts[i].pos -= vectorA*distanciaACorregir;
+		}
+
+
+	}
+	else {
+		arrayParts[i - ClothMesh::numCols].pos += vectorA*distanciaACorregir;
+	}
+}
+
 void PhysicsUpdate(float dt) {
 
-	Sphere::updateSphere(sphereC,sphereR);
-	//TODO
-	for (int i = 0; i < ClothMesh::numVerts; i++) {
-		arrayParts[i].Particle::UpdateParticle(dt, gravity);
+	contador += dt;
 
-
-
-	}
-	
-	//Se guardan en el array de posiciones las posiciones nuevas de cada particula
-	for (int i = 0; i < ClothMesh::numVerts; i ++) {
-		arrayPos[i*3] = arrayParts[i].pos.x;
-		arrayPos[i*3 + 1] = arrayParts[i].pos.y;
-		arrayPos[i*3 + 2] = arrayParts[i].pos.z;
+	if (contador > resetTime) {
+		for (int i = 0; i < ClothMesh::numVerts; i++) {
+			arrayParts[i].Reset();
+		}
+		contador = 0;
 	}
 
-	//Metodo que pinta las particulas. Recibe un array con las posiciones de las particulas
-	ClothMesh::updateClothMesh(arrayPos);
+	for (int j = 0; j < ClothMesh::numVerts; j++) {
+		//Actualización de velocidades/posiciones/checkCol
+		arrayParts[j].Particle::UpdateParticle(dt, gravity);
+	}
 
+	for (int i = 0; i < 100; i++) {
+		Sphere::updateSphere(sphereC, sphereR);
+		//TODO
+
+
+		for (int j = 0; j < ClothMesh::numVerts; j++) {
+			//Comprobacion del ratio de deformación
+
+			if (arrayParts[j].index % ClothMesh::numCols > 0) {
+				
+				//Comprobar si se corrige por la izquierda
+				float longitud = glm::length(arrayParts[j].pos-arrayParts[j-1].pos);
+				if (longitud > dist.x + m_elongation) {
+					CorrectPosLeft(j,longitud);
+				}
+
+			}
+
+			if (arrayParts[j].index > (ClothMesh::numCols-1)) {
+				float longitud = glm::length(arrayParts[j].pos - arrayParts[j - ClothMesh::numCols].pos);
+				if (longitud > dist.z + m_elongation) {
+					CorrectPosUp(j,longitud);
+				}
+					//Comprobar si se corrige por aqrriba
+			}
+		}
+
+
+
+		//Se guardan en el array de posiciones las posiciones nuevas de cada particula
+		for (int j = 0; j < ClothMesh::numVerts; j++) {
+			arrayPos[j * 3] = arrayParts[j].pos.x;
+			arrayPos[j * 3 + 1] = arrayParts[j].pos.y;
+			arrayPos[j * 3 + 2] = arrayParts[j].pos.z;
+		}
+
+		//Metodo que pinta las particulas. Recibe un array con las posiciones de las particulas
+		ClothMesh::updateClothMesh(arrayPos);
+	}
 }
 void PhysicsCleanup() {
 	//TODO
