@@ -143,18 +143,18 @@ void Particle::CheckCol(float dt){
 				//	std::cout << "Collided" << std::endl;
 					Bounce(planos[i]);
 			}
-			if (glm::abs(glm::length(pos-sphereC)) < sphereR) {
+			if (glm::length(pos-sphereC) < sphereR) {
 				//HAY QUE CALCULAR EL PUNTO DE INTERSECCION ENTRE LA ESFERA Y LA EQ DE LA RECTA DE LA 
 				//TRAYECTORIA DE LA PARTICULA
 				glm::vec3 antPos = pos - velocity*dt;
 				glm::vec3 recta = pos - antPos;
 				glm::vec3 vDir = glm::normalize(recta);
 
-				float a = (recta.x*recta.x) + (recta.y*recta.y) + (recta.z*recta.z);
+				float a = (vDir.x*vDir.x) + (vDir.y*vDir.y) + (vDir.z*vDir.z);
 
-				float b = ((2 * antPos.x*recta.x) - (2 * recta.x*(sphereC.x*sphereC.x)))
-					+ ((2 * antPos.y*recta.y) - (2 * recta.y*(sphereC.y*sphereC.y)))
-					+ ((2 * antPos.z*recta.z) - (2 * recta.z*(sphereC.z*sphereC.z)));
+				float b = ((2 * antPos.x*vDir.x) - (2 * vDir.x*(sphereC.x*sphereC.x)))
+					+ ((2 * antPos.y*vDir.y) - (2 * vDir.y*(sphereC.y*sphereC.y)))
+					+ ((2 * antPos.z*vDir.z) - (2 * vDir.z*(sphereC.z*sphereC.z)));
 
 				float c = ((antPos.x*antPos.x) + (sphereC.x*sphereC.x) - (2 * antPos.x*(sphereC.x*sphereC.x)))
 					+ (antPos.y*antPos.y) + (sphereC.y*sphereC.y) - (2 * antPos.y*(sphereC.y*sphereC.y))
@@ -162,8 +162,8 @@ void Particle::CheckCol(float dt){
 
 				float alpha = (-b + glm::sqrt(b*b - 4*a*c)) / 2 * a;
 				std::cout << alpha << std::endl;
-				if (alpha>0) {
-					glm::vec3 colPoint = antPos + alpha*recta;
+				if (alpha < 0) {
+					glm::vec3 colPoint = antPos + alpha*vDir;
 
 					glm::vec3 n = colPoint - sphereC;
 					n = glm::normalize(n);
