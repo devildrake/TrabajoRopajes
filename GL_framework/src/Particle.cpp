@@ -161,9 +161,14 @@ void Particle::CheckCol(float dt){
 					+ (antPos.z*antPos.z) + (sphereC.z*sphereC.z) - (2 * antPos.z*(sphereC.z*sphereC.z))
 					- sphereR*sphereR;
 
-				float alpha = (-b - glm::sqrt(b*b - 4*a*c)) / 2 * a;
+				float alpha1 = (-b - glm::sqrt(b*b - 4*a*c)) / 2 * a;
+				float alpha2 = (-b - glm::sqrt(b*b - 4 * a*c)) / 2 * a;
 
-				glm::vec3 colPoint = antPos + alpha*vDir;
+				glm::vec3 colPoint;
+				if (alpha1 < alpha2) colPoint = antPos + alpha1*vDir;
+				else colPoint = antPos + alpha2*vDir;
+
+				
 				//std::cout << colPoint.x <<", "<<colPoint.y<<", "<<colPoint.z << std::endl;
 
 				glm::vec3 n = colPoint - sphereC;
