@@ -38,6 +38,7 @@ public:
 	glm::vec3 pos;
 	glm::vec3 prevPos;
 	glm::vec3 gravityForce;
+	glm::vec3 prevVelocity;
 	glm::vec3 velocity;
 	int index;
 	float mass;
