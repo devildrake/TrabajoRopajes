@@ -29,6 +29,8 @@ void Particle::StartParticle(glm::vec3 posicionOriginal) {
 void Particle::Reset() {
 	pos = orgPos;
 	velocity = glm::vec3(0, 0, 0);
+	prevPos = glm::vec3(0, 0, 0);
+	prevVelocity = glm::vec3(0, 0, 0);
 }
 
 void Particle::UpdateParticle(float dt, glm::vec3 gravity) {
@@ -38,7 +40,9 @@ void Particle::UpdateParticle(float dt, glm::vec3 gravity) {
 		gravityForce = gravity;
 
 		glm::vec3 accel = CalculateForce();
+		
 		prevPos = pos;
+		prevVelocity = velocity;
 
 		pos = pos + velocity*dt;
 
@@ -49,7 +53,8 @@ void Particle::UpdateParticle(float dt, glm::vec3 gravity) {
 }
 
 glm::vec3 Particle::ApplySpring(glm::vec2 k, glm::vec3 p1, glm::vec3 p2, glm::vec3 v1, glm::vec3 v2, float distOrg) {
-	return (-(k.x*(glm::length(p1-p2)-distOrg)+k.y*(v1-v2)*((p1-p2)/glm::length(p1-p2)))*(p1-p2/(glm::length(p1 - p2))));
+	glm::vec3 a = glm::normalize(p1 - p2);
+	return (-(k.x*(glm::length(p1-p2)-distOrg)+k.y*glm::dot((v1 - v2),a))*a);
 }
 
 glm::vec3 Particle::CalculateForce() {
@@ -89,43 +94,43 @@ glm::vec3 Particle::CalculateForce() {
 	//}
 				
 	if (index > ClothMesh::numCols) {
-		strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 14].pos, velocity, arrayParts[index - 14].velocity, dist.z); //ARRIBA
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 14].prevPos, velocity, arrayParts[index - 14].prevVelocity, dist.z); //ARRIBA
 		if (index > ClothMesh::numCols * 2) {
-				bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2 - 14].pos, velocity, arrayParts[index - 2 * 14].velocity, dist.z * 2); //ARRIBAARRIBA
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2 * 14].prevPos, velocity, arrayParts[index - 2 * 14].prevVelocity, dist.z * 2); //ARRIBAARRIBA
 		}
 	}
 
 	if (index < (ClothMesh::numVerts - ClothMesh::numCols)) {
-		strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 14].pos, velocity, arrayParts[index + 14].velocity, dist.z); //ABAJO
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 14].prevPos, velocity, arrayParts[index + 14].prevVelocity, dist.z); //ABAJO
 		if (index < (ClothMesh::numVerts - 2 * ClothMesh::numCols)) {
-				bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2 * 14].pos, velocity, arrayParts[index + 2 * 14].velocity, dist.z * 2); //ABAJOABAJO
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2 * 14].prevPos, velocity, arrayParts[index + 2 * 14].prevVelocity, dist.z * 2); //ABAJOABAJO
 		}
 	}
 
 	if (index % 14 > 0) {
-		strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 1].pos, velocity, arrayParts[index - 1].velocity, dist.x); //IZQUIERDA
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index - 1].prevPos, velocity, arrayParts[index - 1].prevVelocity, dist.x); //IZQUIERDA
 
 		if (index % 14 > 1) {
-			bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2].pos, velocity, arrayParts[index - 2].velocity, dist.x * 2); //IZQUIERDAIZQUIERDA
+			bendForce += ApplySpring(k_bend, pos, arrayParts[index - 2].prevPos, velocity, arrayParts[index - 2].prevVelocity, dist.x * 2); //IZQUIERDAIZQUIERDA
 		}
 		if (index > ClothMesh::numCols) {
-				shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 - 1].pos, velocity, arrayParts[index - 14 - 1].velocity, glm::length(dist)); //ARRIBA IZQUIERDA
+				shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 - 1].prevPos, velocity, arrayParts[index - 14 - 1].prevVelocity, glm::length(dist)); //ARRIBA IZQUIERDA
 		}
 		if (index < (ClothMesh::numVerts - ClothMesh::numCols)) {
-				shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 - 1].pos, velocity, arrayParts[index + 14 - 1].velocity, glm::length(dist)); //ABAJO IZQUIERDA
+				shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 - 1].prevPos, velocity, arrayParts[index + 14 - 1].prevVelocity, glm::length(dist)); //ABAJO IZQUIERDA
 		}
 	}
 
 	if (index % 14 < 13) {
-		strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 1].pos, velocity, arrayParts[index + 1].velocity, dist.x);	//DERECHA
+		strechForce += ApplySpring(k_Strech, pos, arrayParts[index + 1].prevPos, velocity, arrayParts[index + 1].prevVelocity, dist.x);	//DERECHA
 		if (index % 14 < 12) {
-				bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2].pos, velocity, arrayParts[index + 2].velocity, dist.x * 2); //DERECHADERECHA
+				bendForce += ApplySpring(k_bend, pos, arrayParts[index + 2].prevPos, velocity, arrayParts[index + 2].prevVelocity, dist.x * 2); //DERECHADERECHA
 		}
 		if (index > ClothMesh::numCols) {
-				shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 + 1].pos, velocity, arrayParts[index - 14 + 1].velocity, glm::length(dist)); //ARRIBA DERECHA
+				shearForce += ApplySpring(k_Shear, pos, arrayParts[index - 14 + 1].prevPos, velocity, arrayParts[index - 14 + 1].prevVelocity, glm::length(dist)); //ARRIBA DERECHA
 		}
 		if (index < (ClothMesh::numVerts - ClothMesh::numCols)) {
-				shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 + 1].pos, velocity, arrayParts[index + 14 + 1].velocity, glm::length(dist)); //ABAJO DERECHA
+				shearForce += ApplySpring(k_Shear, pos, arrayParts[index + 14 + 1].prevPos, velocity, arrayParts[index + 14 + 1].prevVelocity, glm::length(dist)); //ABAJO DERECHA
 		}
 	}
 	resultantForce = (gravityForce * mass)+bendForce+strechForce+shearForce;
@@ -135,6 +140,8 @@ glm::vec3 Particle::CalculateForce() {
 }
 
 void Particle::CheckCol(float dt){
+	extern bool colisions;
+	if (colisions) {
 	extern glm::vec3 sphereC;
 	extern float sphereR;
 
@@ -142,7 +149,9 @@ void Particle::CheckCol(float dt){
 		for (int i = 0; i < 6; i++) {
 			if (((glm::dot(planos[i].n, prevPos)) + planos[i].d) * ((glm::dot(planos[i].n, pos)) + planos[i].d) <= 0) {
 				//	std::cout << "Collided" << std::endl;
+
 					Bounce(planos[i]);
+				
 			}
 			if (glm::length(pos-sphereC) < sphereR) {
 				//HAY QUE CALCULAR EL PUNTO DE INTERSECCION ENTRE LA ESFERA Y LA EQ DE LA RECTA DE LA 
@@ -176,7 +185,7 @@ void Particle::CheckCol(float dt){
 
 				n = glm::normalize(n);
 				int D = -(glm::dot(n, colPoint));
-				Bounce(Plane(n.x, n.y, n.z, D));
+				//Bounce(Plane(n.x, n.y, n.z, D));
 				
 				/*float a = glm::pow(recta.x, 2) + glm::pow(recta.y, 2) + glm::pow(recta.z, 2);
 				float b = 2 * (recta.x * (antPos.x - sphereC.x) + recta.y + (antPos.y - sphereC.y) + recta.z * (antPos.z - sphereC.z));
@@ -208,7 +217,7 @@ void Particle::CheckCol(float dt){
 	//}
 	}
 }
-
+}
 void Particle::Bounce(Plane plano) {
 	extern float elasticCoeficientBounce;
 	pos = pos - (1+ elasticCoeficientBounce) * (glm::dot(plano.n, pos) + plano.d)*plano.n;

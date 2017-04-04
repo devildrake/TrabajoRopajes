@@ -4,6 +4,8 @@
 #include <math.h>
 
 bool show_test_window = false;
+bool reset = false;
+bool colisions = true;
 glm::vec3 gravity;
 Particle* arrayParts;
 
@@ -40,8 +42,12 @@ void GUI() {
 	{	//FrameRate
 		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 		ImGui::DragFloat("Reset Time", &resetTime,0.2f,0,20);
+		ImGui::Checkbox("Enabled Collisons",&colisions);
 
 		//ImGui::DragFloat3("gravity", &gravity.x, 0.1f, -10.f, 10.f);
+		
+		ImGui::Checkbox("Reset",&reset);
+
 
 		ImGui::SmallButton("Pointless Button - Beware, pointless");
 
@@ -53,7 +59,7 @@ void GUI() {
 
 
 		//ImGui::DragFloat("Particle Link Di");
-		ImGui::DragFloat("Max Elongation",&m_elongation,0.05f,0.05f,0.2f);
+		ImGui::DragFloat("Max Elongation",&m_elongation,0.01f,0.02f,0.2f);
 
 		//ImGui::Checkbox("Use elongation Correction");
 		//ImGui::Checkbox("Use Collisions");
@@ -155,11 +161,12 @@ void PhysicsUpdate(float dt) {
 
 	contador += dt;
 
-	if (contador > resetTime) {
+	if (contador > resetTime||reset) {
 		for (int i = 0; i < ClothMesh::numVerts; i++) {
 			arrayParts[i].Reset();
 		}
 		contador = 0;
+		reset = false;
 	}
 
 	for (int j = 0; j < ClothMesh::numVerts; j++) {
