@@ -32,6 +32,7 @@ void Particle::Reset() {
 }
 
 void Particle::UpdateParticle(float dt, glm::vec3 gravity) {
+	antPos = pos;
 	if (index != 0 && index != 13) {
 
 		gravityForce = gravity;
@@ -146,29 +147,29 @@ void Particle::CheckCol(float dt){
 			if (glm::length(pos-sphereC) < sphereR) {
 				//HAY QUE CALCULAR EL PUNTO DE INTERSECCION ENTRE LA ESFERA Y LA EQ DE LA RECTA DE LA 
 				//TRAYECTORIA DE LA PARTICULA
-				glm::vec3 antPos = pos - velocity*dt;
-				glm::vec3 recta = pos - antPos;
+				//glm::vec3 antPos = pos - velocity*dt;
+				glm::vec3 recta = pos - prevPos;
 				glm::vec3 vDir = glm::normalize(recta);
 
-				float a = (vDir.x*vDir.x) + (vDir.y*vDir.y) + (vDir.z*vDir.z);
+				float a = (recta.x*recta.x) + (recta.y*recta.y) + (recta.z*recta.z);
 
-				float b = ((2 * antPos.x*vDir.x) - (2 * vDir.x*(sphereC.x*sphereC.x)))
-					+ ((2 * antPos.y*vDir.y) - (2 * vDir.y*(sphereC.y*sphereC.y)))
-					+ ((2 * antPos.z*vDir.z) - (2 * vDir.z*(sphereC.z*sphereC.z)));
+				float b = ((2 * prevPos.x*vDir.x) - (2 * vDir.x*(sphereC.x*sphereC.x)))
+					+ ((2 * prevPos.y*vDir.y) - (2 * vDir.y*(sphereC.y*sphereC.y)))
+					+ ((2 * prevPos.z*vDir.z) - (2 * vDir.z*(sphereC.z*sphereC.z)));
 
-				float c = ((antPos.x*antPos.x) + (sphereC.x*sphereC.x) - (2 * antPos.x*(sphereC.x*sphereC.x)))
-					+ (antPos.y*antPos.y) + (sphereC.y*sphereC.y) - (2 * antPos.y*(sphereC.y*sphereC.y))
-					+ (antPos.z*antPos.z) + (sphereC.z*sphereC.z) - (2 * antPos.z*(sphereC.z*sphereC.z))
+				float c = ((prevPos.x*prevPos.x) + (sphereC.x*sphereC.x) - (2 * prevPos.x*(sphereC.x*sphereC.x)))
+					+ (prevPos.y*prevPos.y) + (sphereC.y*sphereC.y) - (2 * prevPos.y*(sphereC.y*sphereC.y))
+					+ (prevPos.z*prevPos.z) + (sphereC.z*sphereC.z) - (2 * prevPos.z*(sphereC.z*sphereC.z))
 					- sphereR*sphereR;
 
 				float alpha1 = (-b - glm::sqrt(b*b - 4*a*c)) / 2 * a;
 				float alpha2 = (-b - glm::sqrt(b*b - 4 * a*c)) / 2 * a;
 
 				glm::vec3 colPoint;
-				if (alpha1 < alpha2) colPoint = antPos + alpha1*vDir;
-				else colPoint = antPos + alpha2*vDir;
+				if (alpha1 < alpha2) colPoint = prevPos + alpha1*vDir;
+				else colPoint = prevPos + alpha2*vDir;
 
-				
+				std::cout << "Posicion anterior-->" << prevPos.x << ", " << prevPos.y << ", " << prevPos.z << "Posicion actual-->" << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 				//std::cout << colPoint.x <<", "<<colPoint.y<<", "<<colPoint.z << std::endl;
 
 				glm::vec3 n = colPoint - sphereC;
