@@ -204,6 +204,7 @@ void Particle::CheckCol(float dt){
 				}
 				else {
 					n = colPointNegativo - sphereC;
+					n = glm::normalize(n);
 					D = -glm::dot(n, colPointNegativo);
 				}
 
