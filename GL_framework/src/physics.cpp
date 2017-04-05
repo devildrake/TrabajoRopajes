@@ -92,7 +92,7 @@ void PhysicsInit() {
 	dist.x = dist.z = 0.5f;
 	dist.y = 0;
 	elasticCoeficientBounce = 0.5f;
-	sphereC = glm::vec3(0.f,1.f,0.f);
+	sphereC = glm::vec3(0.f,5.f,0.f);
 	sphereR = 1;
 	Sphere::updateSphere(sphereC, sphereR);
 
@@ -158,7 +158,7 @@ void CorrectPosUp(int i,float l) {
 }
 
 void PhysicsUpdate(float dt) {
-
+	Sphere::updateSphere(sphereC, sphereR);
 	contador += dt;
 
 	if (contador > resetTime||reset) {
@@ -174,34 +174,30 @@ void PhysicsUpdate(float dt) {
 		arrayParts[j].Particle::UpdateParticle(dt, gravity);
 	}
 
-	for (int i = 0; i < 100; i++) {
-		Sphere::updateSphere(sphereC, sphereR);
-		//TODO
-
-
+	for (int i = 0; i < 80; i++) {
 		for (int j = 0; j < ClothMesh::numVerts; j++) {
 			//Comprobacion del ratio de deformación
-
 			if (arrayParts[j].index % ClothMesh::numCols > 0) {
-				
 				//Comprobar si se corrige por la izquierda
 				float longitud = glm::length(arrayParts[j].pos-arrayParts[j-1].pos);
 				if (longitud > dist.x + m_elongation) {
 					CorrectPosLeft(j,longitud);
 				}
-
 			}
 
 			if (arrayParts[j].index > (ClothMesh::numCols-1)) {
+				//Comprobar si se corrige por aqrriba
 				float longitud = glm::length(arrayParts[j].pos - arrayParts[j - ClothMesh::numCols].pos);
 				if (longitud > dist.z + m_elongation) {
 					CorrectPosUp(j,longitud);
 				}
-					//Comprobar si se corrige por aqrriba
 			}
 		}
 
-
+		for (int j = 0; j < ClothMesh::numVerts; j++) {
+			//Actualización de velocidades/posiciones/checkCol
+			arrayParts[j].Particle::CheckCol(dt);
+		}
 
 		//Se guardan en el array de posiciones las posiciones nuevas de cada particula
 		for (int j = 0; j < ClothMesh::numVerts; j++) {
@@ -216,4 +212,6 @@ void PhysicsUpdate(float dt) {
 }
 void PhysicsCleanup() {
 	//TODO
+	delete[] arrayParts;
+	delete[] arrayPos;
 }

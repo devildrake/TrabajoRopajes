@@ -35,20 +35,14 @@ void Particle::Reset() {
 
 void Particle::UpdateParticle(float dt, glm::vec3 gravity) {
 	if (index != 0 && index != 13) {
-
 		gravityForce = gravity;
-
 		glm::vec3 accel = CalculateForce();
-		
 		prevPos = pos;
 		prevVelocity = velocity;
-
 		pos = pos + velocity*dt;
-
 		velocity += accel*dt;
-
 	}
-	CheckCol(dt);
+	//CheckCol(dt);
 }
 
 glm::vec3 Particle::ApplySpring(glm::vec2 k, glm::vec3 p1, glm::vec3 p2, glm::vec3 v1, glm::vec3 v2, float distOrg) {
@@ -155,8 +149,8 @@ void Particle::CheckCol(float dt){
 			if (glm::length(pos-sphereC) < sphereR) {
 				//HAY QUE CALCULAR EL PUNTO DE INTERSECCION ENTRE LA ESFERA Y LA EQ DE LA RECTA DE LA 
 				//TRAYECTORIA DE LA PARTICULA
-				/*glm::vec3 recta = pos - prevPos;
-				glm::vec3 vDir = glm::normalize(recta);
+				glm::vec3 recta = pos - prevPos;
+				//std::cout << sphereC.x << ", " << sphereC.y << ", " << sphereC.z << std::endl;
 
 				float a = (recta.x*recta.x) + (recta.y*recta.y) + (recta.z*recta.z);
 
@@ -172,63 +166,53 @@ void Particle::CheckCol(float dt){
 				float alpha1 = (-b - glm::sqrt(b*b - 4*a*c)) / 2 * a;
 				float alpha2 = (-b - glm::sqrt(b*b - 4 * a*c)) / 2 * a;
 
-				glm::vec3 colPoint;
-				if (alpha1 < alpha2) colPoint = prevPos + alpha1*vDir;
-				else colPoint = prevPos + alpha2*vDir;*/
+				glm::vec3 colPoint,n;
+				float D;
+				if (alpha1 <= 1 && alpha1 >= 0) {
+					colPoint = prevPos + alpha1*recta;
+					n = glm::normalize(colPoint - sphereC);
+					D = -(glm::dot(n, colPoint));
+				}
+				else if (alpha2 <= 1 && alpha2 >= 0) {
+					colPoint = prevPos + alpha2*recta;
+					n = glm::normalize(colPoint - sphereC);
+					D = -(glm::dot(n, colPoint));
+				}
 
 				//std::cout << "Posicion anterior-->" << prevPos.x << ", " << prevPos.y << ", " << prevPos.z << "Posicion actual-->" << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
-				//std::cout << colPoint.x <<", "<<colPoint.y<<", "<<colPoint.z << std::endl;
-
+				
 				//VERSION 2 PARA ENCONTRAR EL PUNTO DE COLISION
 
-				glm::vec3 colPointPositivo, colPointNegativo; //Positivo y negativo de la eq de segundo grado.
+				//glm::vec3 colPointPositivo, colPointNegativo; //Positivo y negativo de la eq de segundo grado.
 
-				colPointPositivo.x = sphereC.x + (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
-				colPointPositivo.y = sphereC.y + (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
-				colPointPositivo.z = sphereC.z + (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
+				//colPointPositivo.x = sphereC.x + (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
+				//colPointPositivo.y = sphereC.y + (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
+				//colPointPositivo.z = sphereC.z + (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
 
-				colPointNegativo.x = sphereC.x - (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
-				colPointNegativo.y = sphereC.y - (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
-				colPointNegativo.z = sphereC.z - (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
-				
-				float dist1, dist2;
-				dist1 = glm::distance(colPointPositivo, pos);
-				dist2 = glm::distance(colPointNegativo, pos);
+				//colPointNegativo.x = sphereC.x - (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
+				//colPointNegativo.y = sphereC.y - (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
+				//colPointNegativo.z = sphereC.z - (sphereR*(pos.x - sphereC.x)) / (glm::sqrt(glm::pow(pos.x - sphereC.x, 2) + glm::pow(pos.y - sphereC.y, 2) + glm::pow(pos.z - sphereC.z, 2)));
+				//
+				//float dist1, dist2;
+				//dist1 = glm::distance(colPointPositivo, pos);
+				//dist2 = glm::distance(colPointNegativo, pos);
 
-				glm::vec3 n;
-				int D;
+				//glm::vec3 n;
+				//int D;
 
-				if (dist1 < dist2) {
-					n = colPointPositivo - sphereC;
-					D = -glm::dot(n, colPointPositivo);
-				}
-				else {
-					n = colPointNegativo - sphereC;
-					n = glm::normalize(n);
-					D = -glm::dot(n, colPointNegativo);
-				}
-
-				Bounce(Plane(n.x, n.y, n.z, D));
-				
-				/*float a = glm::pow(recta.x, 2) + glm::pow(recta.y, 2) + glm::pow(recta.z, 2);
-				float b = 2 * (recta.x * (antPos.x - sphereC.x) + recta.y + (antPos.y - sphereC.y) + recta.z * (antPos.z - sphereC.z));
-				float c = glm::pow(sphereC.x, 2) + glm::pow(sphereC.y, 2) + glm::pow(sphereC.z, 2) + glm::pow(antPos.x, 2) + glm::pow(antPos.y, 2) + glm::pow(antPos.z, 2) - 2 * (sphereC.x * antPos.x + sphereC.y * antPos.y + sphereC.z * antPos.z) - (sphereR * sphereR);*/
-
-				//(b*b - 4 * a*c == 0) --> trayectoria tangente a la esfera
-				/*float alpha1, alpha2;
-				if (b*b - 4 * a*c > 0) {
-					alpha1 = (-b + glm::sqrt(b*b - 4 * a*c)) / 2 * a;
-					alpha2 = (-b - glm::sqrt(b*b - 4 * a*c)) / 2 * a;
-					
-					glm::vec3 pColision;
-					if (alpha1<alpha2) pColision = antPos + recta*alpha1;
-					else pColision = antPos + recta*alpha2;
-
-					glm::vec3 n = pColision - sphereC;
-					int D = -(glm::dot(n, pColision));
+				//if (dist1 < dist2) {
+				//	n = colPointPositivo - sphereC;
+				//	D = -glm::dot(n, colPointPositivo);
+				//}
+				//else {
+				//	n = colPointNegativo - sphereC;
+				//	n = glm::normalize(n);
+				//	D = -glm::dot(n, colPointNegativo);
+				//}
+				if (n != glm::vec3(0)) {
 					Bounce(Plane(n.x, n.y, n.z, D));
-				}*/
-
+				}
+				
 			}
 
 		}
