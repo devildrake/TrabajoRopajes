@@ -19,7 +19,6 @@ glm::vec2 k_Strech;
 glm::vec2 k_Shear;
 glm::vec2 k_bend;
 
-
 glm::vec3 sphereC;
 float sphereR;
 
@@ -115,24 +114,24 @@ void CorrectPosLeft(int i,float l) {
 	float distanciaACorregir = l - dist.x;
 	glm::vec3 vectorA = arrayParts[i].pos-arrayParts[i-1].pos;
 	vectorA = vectorA / (glm::length(vectorA));
+	
 
-	if (i != 0 && i != 13) {
+	if (i != 13) {
 		if (i - 1 != 0 && i - 1 != 13) {
 			distanciaACorregir = distanciaACorregir / 2;
 			arrayParts[i].pos -= vectorA*distanciaACorregir;
 			arrayParts[i - 1].pos += vectorA*distanciaACorregir;
+			
 		}
 		else {
 			arrayParts[i].pos -= vectorA*distanciaACorregir;
+			
 		}
-
-
 	}
 	else {
 		arrayParts[i-1].pos += vectorA*distanciaACorregir;
+		
 	}
-
-
 }
 
 void CorrectPosUp(int i,float l) {
@@ -174,7 +173,7 @@ void PhysicsUpdate(float dt) {
 		arrayParts[j].Particle::UpdateParticle(dt, gravity);
 	}
 
-	for (int i = 0; i < 80; i++) {
+	for (int i = 0; i < 150; i++) {
 		for (int j = 0; j < ClothMesh::numVerts; j++) {
 			//Comprobacion del ratio de deformación
 			if (arrayParts[j].index % ClothMesh::numCols > 0) {
@@ -192,7 +191,8 @@ void PhysicsUpdate(float dt) {
 					CorrectPosUp(j,longitud);
 				}
 			}
-		}
+		}	
+
 
 		for (int j = 0; j < ClothMesh::numVerts; j++) {
 			//Actualización de velocidades/posiciones/checkCol
@@ -205,10 +205,11 @@ void PhysicsUpdate(float dt) {
 			arrayPos[j * 3 + 1] = arrayParts[j].pos.y;
 			arrayPos[j * 3 + 2] = arrayParts[j].pos.z;
 		}
-
-		//Metodo que pinta las particulas. Recibe un array con las posiciones de las particulas
-		ClothMesh::updateClothMesh(arrayPos);
 	}
+
+	//Metodo que pinta las particulas. Recibe un array con las posiciones de las particulas
+	ClothMesh::updateClothMesh(arrayPos);
+	
 }
 void PhysicsCleanup() {
 	//TODO
