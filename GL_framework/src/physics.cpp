@@ -110,6 +110,23 @@ void PhysicsInit() {
 
 }
 
+glm::vec3 ApplySpring(glm::vec2 k, glm::vec3 p1, glm::vec3 p2, glm::vec3 v1, glm::vec3 v2, float distOrg) {
+	glm::vec3 a = glm::normalize(p1 - p2);
+	return (-(k.x*(glm::length(p1 - p2) - distOrg) + k.y*glm::dot((v1 - v2), a))*a);
+}
+
+glm::vec3 spring(Particle part1, Particle part2, float distance)
+{
+	glm::vec3 force, damp;
+	float elast;
+	glm::vec3 normalizedPos = ((part2.pos - part1.pos) / glm::length(part2.pos - part1.pos));
+	elast = elasticCoeficientBounce * (glm::length(part2.pos - part1.pos) - distance);
+	damp = k_Shear.y * (part2.velocity - part1.velocity) * normalizedPos;
+	force = (elast + damp) * normalizedPos;
+
+	return force;
+}
+
 void CorrectPosLeft(int i,float l) {
 	float distanciaACorregir = l - dist.x;
 	glm::vec3 vectorA = arrayParts[i].pos-arrayParts[i-1].pos;
@@ -206,8 +223,151 @@ void PhysicsUpdate(float dt) {
 			arrayPos[j * 3 + 2] = arrayParts[j].pos.z;
 		}
 	}
-
 	//Metodo que pinta las particulas. Recibe un array con las posiciones de las particulas
+	
+	for (int i = 0; i < ClothMesh::numRows; i++) {
+		for (int j = 0; j < ClothMesh::numCols; j++)
+		{
+			glm::vec3 springForce;
+			int ind = i * ClothMesh::numCols + j;
+			int up = (i - 1) * ClothMesh::numCols + j;
+			int down = (i + 1) * ClothMesh::numCols + j;
+			int left = (i)* ClothMesh::numCols + j - 1;
+			int right = (i)* ClothMesh::numCols + j + 1;
+			int up2 = (i - 2) * ClothMesh::numCols + j;
+			int down2 = (i + 2) * ClothMesh::numCols + j;
+			int left2 = (i)* ClothMesh::numCols + j - 2;
+			int right2 = (i)* ClothMesh::numCols + j + 2;
+			int upL = (i - 1) * ClothMesh::numCols + j - 1;
+			int upR = (i - 1) * ClothMesh::numCols + j + 1;
+			int downR = (i + 1) * ClothMesh::numCols + j + 1;
+			int downL = (i + 1) * ClothMesh::numCols + j - 1;
+
+			if (i == 0 && j == 0) { //TOP LEFT CORNER
+				springForce = spring(arrayParts[ind], arrayParts[right], dist.x);
+
+				arrayParts[ind].addForce(springForce);
+				arrayParts[right].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[down], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[down].addForce(-springForce);
+
+			}
+			else if (i == ClothMesh::numRows - 1 && j == 0) { //DOWN LEFT CORNER
+				springForce = spring(arrayParts[ind], arrayParts[up], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[up].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[right], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[right].addForce(-springForce);
+			}
+			else if (i == 0 && j == ClothMesh::numCols - 1) { //TOP RIGHT CORNER
+				springForce = spring(arrayParts[ind], arrayParts[left], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[left].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[down], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[down].addForce(-springForce);
+			}
+			else if (i == ClothMesh::numRows - 1 && j == ClothMesh::numCols - 1) { //DOWN RIGHT CORNER
+				springForce = spring(arrayParts[ind], arrayParts[up], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[up].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[left], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[left].addForce(-springForce);
+			}
+			else if (i > 1 && i < ClothMesh::numRows - 2 && j > 1 && j < ClothMesh::numCols - 2) { //INNER SQUARE
+				springForce = spring(arrayParts[ind], arrayParts[up], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[up].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[down], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[down].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[left], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[left].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[right], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[right].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[up2], 2 * dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[up2].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[down2], 2 * dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[down2].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[left2], 2 * dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[left2].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[right2], 2 * dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[right2].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[upR], glm::length(dist));
+				arrayParts[ind].addForce(springForce);
+				arrayParts[upR].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[downR], glm::length(dist));
+				arrayParts[ind].addForce(springForce);
+				arrayParts[downR].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[upL], glm::length(dist));
+				arrayParts[ind].addForce(springForce);
+				arrayParts[upL].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[downL], glm::length(dist));
+				arrayParts[ind].addForce(springForce);
+				arrayParts[downL].addForce(-springForce);
+			}
+			else if (((j == 1 || j == ClothMesh::numCols - 2) && (i > 0 && i < ClothMesh::numRows - 1)) || ((i == 1 || i == ClothMesh::numRows - 2) && (j > 0 && j < ClothMesh::numCols - 1))) { //LEFT ONE COLUMN  
+				springForce = spring(arrayParts[ind], arrayParts[upL], glm::length(dist));
+				arrayParts[ind].addForce(springForce);
+				arrayParts[upL].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[up], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[up].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[upR], glm::length(dist));
+				arrayParts[ind].addForce(springForce);
+				arrayParts[upR].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[left], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[left].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[right], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[right].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[downL], glm::length(dist));
+				arrayParts[ind].addForce(springForce);
+				arrayParts[downL].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[down], dist.x);
+				arrayParts[ind].addForce(springForce);
+				arrayParts[down].addForce(-springForce);
+
+				springForce = spring(arrayParts[ind], arrayParts[downR], glm::length(dist));
+				arrayParts[ind].addForce(springForce);
+				arrayParts[downR].addForce(-springForce);
+			}
+
+		}
+
+	}
+
 	ClothMesh::updateClothMesh(arrayPos);
 	
 }

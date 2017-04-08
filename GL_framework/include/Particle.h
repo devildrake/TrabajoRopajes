@@ -33,7 +33,7 @@ public:
 		}
 	};
 	Plane planos[6];
-
+	glm::vec3 _force;
 	glm::vec3 orgPos;
 	glm::vec3 pos;
 	glm::vec3 prevPos;
@@ -49,7 +49,8 @@ public:
 	void Bounce(Plane);
 	void CheckCol(float);
 	void Reset();
-	glm::vec3 Particle::ApplySpring(glm::vec2,glm::vec3,glm::vec3,glm::vec3,glm::vec3,float);
-	glm::vec3 CalculateForce();
+	//glm::vec3 Particle::ApplySpring(glm::vec2,glm::vec3,glm::vec3,glm::vec3,glm::vec3,float);
+	//glm::vec3 CalculateForce();
+	void Particle::addForce(glm::vec3 force);
 };	
 
